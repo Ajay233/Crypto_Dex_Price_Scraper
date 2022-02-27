@@ -1,0 +1,15 @@
+{
+  "name": "cryptopricescraper",
+  "version": "1.0.0",
+  "description": "Crypto DEX price scraper server",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.3",
+    "puppeteer": "^13.4.0"
+  }
+}
