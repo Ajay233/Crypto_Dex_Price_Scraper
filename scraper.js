@@ -1,5 +1,17 @@
 const puppeteer = require('puppeteer')
 
+const swapExists = async (url, swapCurrency) => {
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.goto(url, {
+    waitUntil: 'networkidle0'
+  });
+
+  // Find the button to get the button ID
+  const elem = await page.$x(`//button[contains(., '${swapCurrency}')]`)
+  return elem.length > 0
+}
+
 const scrapePrice = async (url, swapCurrency, priceCurrency) => {
 
   // Connect to the specified URL and wait until this process is complete
@@ -25,7 +37,8 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
   // Extract the price from the string
   const price = extractPrice(priceCurrency, priceTextString)
   await browser.close();
-  return `The price of ${priceCurrency} is: ${price} tADA`
+  console.log(`The price of ${priceCurrency} is: ${price} tADA`)
+  return price
 };
 
 const createIdXpath = (id) => {
@@ -42,4 +55,5 @@ const extractPrice = (priceCurrency, priceTextString) => {
   return priceTextString.match(regexFinal)
 }
 
+exports.swapExists = swapExists;
 exports.scrapePrice = scrapePrice;
