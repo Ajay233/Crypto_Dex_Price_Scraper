@@ -3,37 +3,22 @@ const app = express();
 const port = 3030;
 const scraper = require('./scraper.js')
 const mysql = require('./databaseQueries.js')
+const schedule = require('node-schedule')
 
-const url = 'https://app.minswap.org'
-//const url = 'https://testnet.minswap.org'
-//const url = 'https://exchange.sundaeswap.finance/#/'
+let jobs = {}
 
 app.use(express.json());
+
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
 })
 
-app.get('/', async (req, resp) => {
-  try {
-    const result = await scraper.swapExists(url, "ADA/MIN")
-    if(result){
-      resp.send("we found something")
-    } else {
-      resp.send("No match for that swap")
-    }
-  } catch (e) {
-    console.log(e)
-    resp.json(e)
-  }
-})
-
 app.get('/getPrices/:currency', async (req,resp) => {
   try{
     //let msg = await scraper.scrapePrice(url, "tADA/tMIN", "tMIN");
     let rows = await mysql.getPrices(req.params.currency);
-    console.log(rows)
     resp.json(rows)
   } catch(e) {
     console.log(e)
@@ -41,8 +26,8 @@ app.get('/getPrices/:currency', async (req,resp) => {
   }
 })
 
-app.post('/startTicker', async (req, resp) => {
-  console.log(req.body)
+// ** NOT CURRENTLY USED **
+app.post('/startTickerV1', async (req, resp) => {
   // req.url, req.swapCurrency, req.priceCurrency
   try {
     // check element exists
@@ -67,31 +52,31 @@ app.post('/startTicker', async (req, resp) => {
   }
 })
 
-
-app.post('/setPrice', async (req, resp) => {
+app.post('/startTickerV2', async (req, resp) => {
   try {
-    const price = await scraper.scrapePrice(req.body.url, req.body.swapCurrency, req.body.priceCurrency)
-    await mysql.setPrice(req.body.priceCurrency, price)
-    resp.send("Price found and saved")
+    jobs[req.body.priceCurrency] = schedule.scheduleJob(`*/${req.body.frequency} * * * *`, async () => {
+      const price = await scraper.scrapePrice(req.body.url, req.body.swapCurrency, req.body.priceCurrency)
+      console.log("Price found and retrieved")
+      mysql.setPrice(req.body.priceCurrency, price)
+      console.log("Price saved")
+    })
+    resp.send(`${req.body.priceCurrency} price ticker started`)
   } catch (e) {
-    console.log(e)
+    console(e)
     resp.json(e)
   }
 })
 
-app.get('/getTickers', async (req, resp) => {
-  try {
-    const tickers = await mysql.getActiveTickers();
-    resp.json(tickers)
-  } catch (e) {
-    console.log(e)
-    resp.json(e)
-  }
+app.get('/getTickersV2', (req, resp) => {
+  resp.json(Object.keys(jobs))
 })
 
 app.post('/stopTicker', async (req, resp) => {
   try {
-    const result = mysql.deleteTicker(req.tickerId, req.currency)
+    jobs[req.body.currency].cancel()
+    delete jobs[req.body.currency]
+    resp.send("Ticker cancelled")
+    //const result = mysql.deleteTicker(req.tickerId, req.currency)
   } catch (e) {
     console.log(e)
     resp.json(e)

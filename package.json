@@ -3,6 +3,10 @@
   "version": "1.0.0",
   "description": "Crypto DEX price scraper server",
   "main": "index.js",
+  "engines": {
+    "node": "12.14.1",
+    "npm": "6.13.4"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "NODE_ENV=production node server.js",
@@ -15,6 +19,7 @@
     "express": "^4.17.3",
     "mysql": "^2.18.1",
     "mysql2": "^2.3.3",
+    "node-schedule": "^2.1.0",
     "puppeteer": "^13.4.0"
   },
   "optionalDependencies": {

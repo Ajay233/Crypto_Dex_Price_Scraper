@@ -13,7 +13,6 @@ const swapExists = async (url, swapCurrency) => {
 }
 
 const scrapePrice = async (url, swapCurrency, priceCurrency) => {
-
   // Connect to the specified URL and wait until this process is complete
   const browser = await puppeteer.launch();
   const page = await browser.newPage();
