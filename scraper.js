@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer')
 
 const swapExists = async (url, swapCurrency) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
   await page.goto(url, {
     waitUntil: 'networkidle0'
@@ -14,7 +14,7 @@ const swapExists = async (url, swapCurrency) => {
 
 const scrapePrice = async (url, swapCurrency, priceCurrency) => {
   // Connect to the specified URL and wait until this process is complete
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
   await page.goto(url, {
     waitUntil: 'networkidle0'
