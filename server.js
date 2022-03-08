@@ -4,8 +4,14 @@ const port = process.env.PORT || 3030;
 const scraper = require('./scraper.js')
 const mysql = require('./databaseQueries.js')
 const schedule = require('node-schedule')
+const http = require("http");
 
 let jobs = {}
+
+// Ingterval to keep dyno from sleeping
+setInterval(() => {
+    http.get("https://test-scraper-server.herokuapp.com/");
+}, 300000);
 
 app.use(express.json());
 
