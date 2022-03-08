@@ -1,6 +1,6 @@
 const express = require('express');
 const app = express();
-const port = 3030;
+const port = process.env.PORT || 3030;
 const scraper = require('./scraper.js')
 const mysql = require('./databaseQueries.js')
 const schedule = require('node-schedule')
@@ -13,6 +13,10 @@ app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
   next();
+})
+
+app.get('/', (req, resp) => {
+  resp.send("Server is up and running")
 })
 
 app.get('/getPrices/:currency', async (req,resp) => {
