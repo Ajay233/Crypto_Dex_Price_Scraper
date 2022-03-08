@@ -4,13 +4,15 @@ const port = process.env.PORT || 3030;
 const scraper = require('./scraper.js')
 const mysql = require('./databaseQueries.js')
 const schedule = require('node-schedule')
-const http = require("http");
+const https = require("https");
 
 let jobs = {}
 
 // Ingterval to keep dyno from sleeping
 setInterval(() => {
-    http.get("https://test-scraper-server.herokuapp.com/");
+    https.get("https://test-scraper-server.herokuapp.com/", () => {
+      console.log("Test endpoint pinged")
+    });
 }, 300000);
 
 app.use(express.json());
@@ -22,6 +24,7 @@ app.use((req, res, next) => {
 })
 
 app.get('/', (req, resp) => {
+  console.log("Test endpoint reached")
   resp.send("Server is up and running")
 })
 
