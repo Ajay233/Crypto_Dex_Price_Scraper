@@ -10,9 +10,7 @@ let jobs = {}
 
 // Ingterval to keep dyno from sleeping
 setInterval(() => {
-    https.get("https://test-scraper-server.herokuapp.com/", () => {
-      console.log("Test endpoint pinged")
-    });
+    https.get("https://test-scraper-server.herokuapp.com/");
 }, 300000);
 
 app.use(express.json());

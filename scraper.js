@@ -16,12 +16,22 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
   // Connect to the specified URL and wait until this process is complete
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
-  await page.goto(url, {
-    waitUntil: 'networkidle0'
-  });
+  try {
+    await page.goto(url, {
+      waitUntil: 'networkidle0'
+    });
+  } catch (e) {
+      console.log(`Unable to go to ${url}`)
+      await browser.close();
+  }
 
   // Find the button to get the button ID
-  await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
+  try {
+    await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
+  } catch (e) {
+    console.log(`Could not find button containing ${swapCurrency}`)
+    await browser.close();
+  }
   const [elem] = await page.$x(`//button[contains(., '${swapCurrency}')]`)
   const buttonId = await page.evaluate(elem => elem.id, elem)
 
