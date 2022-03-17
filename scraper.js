@@ -18,11 +18,11 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
   const page = await browser.newPage();
   try {
     await page.goto(url, {
-      waitUntil: 'networkidle0'
+      waitUntil: 'networkidle0',
+      timeout: 120000
     });
   } catch (e) {
       console.log(`Unable to go to ${url}`)
-      await browser.close();
   }
 
   // Find the button to get the button ID
@@ -30,7 +30,6 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
     await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
   } catch (e) {
     console.log(`Could not find button containing ${swapCurrency}`)
-    await browser.close();
   }
   const [elem] = await page.$x(`//button[contains(., '${swapCurrency}')]`)
   const buttonId = await page.evaluate(elem => elem.id, elem)
