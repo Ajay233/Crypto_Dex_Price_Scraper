@@ -26,9 +26,9 @@ const getPrices = async (currency) => {
   return rows[0]
 }
 
-const saveTickerDetails = async (tickerId, currency) => {
+const saveTickerDetails = async (url, swapCurrency, currency, freq) => {
   const connection = await connect()
-  const result = await connection.query(`INSERT INTO crypto_tickers (ticker_id, currency) VALUES(${tickerId}, '${currency}')`)
+  const result = await connection.query(`INSERT INTO crypto_tickers (dex_url, swap_currencies, price_currency, chron_job_frequency) VALUES('${url}', '${swapCurrency}', '${currency}', '${freq}')`)
   return result[0]
 }
 
@@ -38,10 +38,10 @@ const getActiveTickers = async () => {
   return rows[0]
 }
 
-const deleteTicker = async (tickerId, currency) => {
+const deleteTicker = async (tickerId) => {
   clearInterval(tickerId)
   const connection = await connect()
-  const result = await connection.query(`DELETE FROM crypto_tickers WHERE ticker_id=${tickerId} AND currency='${currency}'`)
+  const result = await connection.query(`DELETE FROM crypto_tickers WHERE id='${tickerId}'`)
   return result[0]
 }
 

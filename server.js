@@ -71,23 +71,26 @@ app.post('/startTickerV2', async (req, resp) => {
       mysql.setPrice(req.body.priceCurrency, price)
       console.log("Price saved")
     })
+    await mysql.saveTickerDetails(req.body.url, req.body.swapCurrency, req.body.priceCurrency, req.body.frequency)
     resp.send(`${req.body.priceCurrency} price ticker started`)
   } catch (e) {
-    console(e)
+    console.log(e)
     resp.json(e)
   }
 })
 
-app.get('/getTickersV2', (req, resp) => {
-  resp.json(Object.keys(jobs))
+app.get('/getTickersV2', async (req, resp) => {
+  const activeTickers = await mysql.getActiveTickers()
+  //resp.json(Object.keys(jobs))
+  resp.json(activeTickers)
 })
 
 app.post('/stopTicker', async (req, resp) => {
   try {
     jobs[req.body.currency].cancel()
     delete jobs[req.body.currency]
+    await mysql.deleteTicker(req.body.id)
     resp.send("Ticker cancelled")
-    //const result = mysql.deleteTicker(req.tickerId, req.currency)
   } catch (e) {
     console.log(e)
     resp.json(e)
