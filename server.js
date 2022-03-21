@@ -6,7 +6,22 @@ const mysql = require('./databaseQueries.js')
 const schedule = require('node-schedule')
 const https = require("https");
 
-let jobs = {}
+let jobs = {};
+
+// IIFE to restart any active chronjobs if the server is restarted
+(async () => {
+  const activeTickers = await mysql.getActiveTickers()
+  activeTickers.forEach((ticker) => {
+    jobs[ticker.price_currency] = schedule.scheduleJob(`*/${ticker.chron_job_frequency} * * * *`, async () => {
+      const price = await scraper.scrapePrice(ticker.dex_url, ticker.swap_currencies, ticker.price_currency)
+      console.log("Price found and retrieved")
+      mysql.setPrice(ticker.price_currency, price)
+      console.log("Price saved")
+    })
+  })
+  activeTickers.length > 0 ? console.log("Active tickers reinstated") : console.log("No tickers to reinstate");
+})();
+
 
 // Ingterval to keep dyno from sleeping
 setInterval(() => {
