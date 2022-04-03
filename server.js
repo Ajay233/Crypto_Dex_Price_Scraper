@@ -14,9 +14,13 @@ let jobs = {};
   activeTickers.forEach((ticker) => {
     jobs[ticker.price_currency] = schedule.scheduleJob(`*/${ticker.chron_job_frequency} * * * *`, async () => {
       const price = await scraper.scrapePrice(ticker.dex_url, ticker.swap_currencies, ticker.price_currency)
-      console.log("Price found and retrieved")
-      mysql.setPrice(ticker.price_currency, price)
-      console.log("Price saved")
+      if(price !== null && price !== undefined){
+        console.log("Price found and retrieved")
+        mysql.setPrice(ticker.price_currency, price)
+        console.log("Price saved")
+      } else {
+        console.log("Price not found, nothing to save")
+      }
     })
   })
   activeTickers.length > 0 ? console.log("Active tickers reinstated") : console.log("No tickers to reinstate");
@@ -82,9 +86,13 @@ app.post('/startTickerV2', async (req, resp) => {
   try {
     jobs[req.body.priceCurrency] = schedule.scheduleJob(`*/${req.body.frequency} * * * *`, async () => {
       const price = await scraper.scrapePrice(req.body.url, req.body.swapCurrency, req.body.priceCurrency)
-      console.log("Price found and retrieved")
-      mysql.setPrice(req.body.priceCurrency, price)
-      console.log("Price saved")
+      if(price !== null && price !== undefined){
+        console.log("Price found and retrieved")
+        mysql.setPrice(req.body.priceCurrency, price)
+        console.log("Price saved")
+      } else {
+        console.log("Price not found, nothing to save")
+      }
     })
     await mysql.saveTickerDetails(req.body.url, req.body.swapCurrency, req.body.priceCurrency, req.body.frequency)
     resp.send(`${req.body.priceCurrency} price ticker started`)

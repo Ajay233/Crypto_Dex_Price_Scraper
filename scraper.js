@@ -16,11 +16,13 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
   // Connect to the specified URL and wait until this process is complete
   const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
+  let pageLoaded = false
   try {
     await page.goto(url, {
       waitUntil: 'networkidle0',
       timeout: 120000
     });
+    pageLoaded = true
   } catch (e) {
       console.log(`Unable to go to ${url}`)
       await browser.close();
@@ -28,29 +30,31 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
   }
 
   // Find the button to get the button ID
-  try {
-    await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
-  } catch (e) {
-    console.log(`Could not find button containing ${swapCurrency}`)
+  if(pageLoaded){
+    try {
+      await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
+    } catch (e) {
+      console.log(`Could not find button containing ${swapCurrency}`)
+      await browser.close();
+      return
+    }
+    const [elem] = await page.$x(`//button[contains(., '${swapCurrency}')]`)
+    const buttonId = await page.evaluate(elem => elem.id, elem)
+
+    // Use the button ID to create the panel ID
+    const xPathFinal = createIdXpath(buttonId)
+
+    // Use the panel ID to find the div with the price
+    await page.waitForXPath(xPathFinal)
+    const [priceElem] = await page.$x(xPathFinal)
+    let priceTextString = await page.evaluate(priceElem => priceElem.innerText, priceElem)
+
+    // Extract the price from the string
+    const price = extractPrice(priceCurrency, priceTextString)
     await browser.close();
-    return
+    console.log(`The price of ${priceCurrency} is: ${price} tADA`)
+    return price
   }
-  const [elem] = await page.$x(`//button[contains(., '${swapCurrency}')]`)
-  const buttonId = await page.evaluate(elem => elem.id, elem)
-
-  // Use the button ID to create the panel ID
-  const xPathFinal = createIdXpath(buttonId)
-
-  // Use the panel ID to find the div with the price
-  await page.waitForXPath(xPathFinal)
-  const [priceElem] = await page.$x(xPathFinal)
-  let priceTextString = await page.evaluate(priceElem => priceElem.innerText, priceElem)
-
-  // Extract the price from the string
-  const price = extractPrice(priceCurrency, priceTextString)
-  await browser.close();
-  console.log(`The price of ${priceCurrency} is: ${price} tADA`)
-  return price
 };
 
 const createIdXpath = (id) => {
