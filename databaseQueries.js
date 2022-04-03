@@ -16,32 +16,36 @@ const connect = async () => {
 
 const setPrice = async (currency, cryptoPrice) => {
   const connection = await connect()
-  const result = connection.execute(`INSERT INTO crypto_prices (currency, price) VALUES('${currency}', ${cryptoPrice})`);
+  const result = await connection.query(`INSERT INTO crypto_prices (currency, price) VALUES('${currency}', ${cryptoPrice})`);
+  await connection.end()
   return result[0]
 }
 
 const getPrices = async (currency) => {
   const connection = await connect()
-  const rows = await connection.query(`SELECT price, created FROM crypto_prices WHERE currency='${currency}'`)
+  const rows = await connection.query(`SELECT price, created FROM crypto_prices WHERE currency='${currency}'`);
+  await connection.end()
   return rows[0]
 }
 
 const saveTickerDetails = async (url, swapCurrency, currency, freq) => {
   const connection = await connect()
-  const result = await connection.query(`INSERT INTO crypto_tickers (dex_url, swap_currencies, price_currency, chron_job_frequency) VALUES('${url}', '${swapCurrency}', '${currency}', '${freq}')`)
+  const result = await connection.query(`INSERT INTO crypto_tickers (dex_url, swap_currencies, price_currency, chron_job_frequency) VALUES('${url}', '${swapCurrency}', '${currency}', '${freq}')`);
+  await connection.end()
   return result[0]
 }
 
 const getActiveTickers = async () => {
   const connection = await connect()
-  const rows = await connection.query(`SELECT * FROM crypto_tickers`)
+  const rows = await connection.query(`SELECT * FROM crypto_tickers`);
   return rows[0]
 }
 
 const deleteTicker = async (tickerId) => {
   clearInterval(tickerId)
   const connection = await connect()
-  const result = await connection.query(`DELETE FROM crypto_tickers WHERE id='${tickerId}'`)
+  const result = await connection.query(`DELETE FROM crypto_tickers WHERE id='${tickerId}'`);
+  await connection.end()
   return result[0]
 }
 
