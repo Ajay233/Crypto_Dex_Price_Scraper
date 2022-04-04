@@ -16,7 +16,7 @@ let jobs = {};
       const price = await scraper.scrapePrice(ticker.dex_url, ticker.swap_currencies, ticker.price_currency)
       if(price !== null && price !== undefined){
         console.log("Price found and retrieved")
-        mysql.setPrice(ticker.price_currency, price)
+        mysql.setPrice(ticker.price_currency, price, ticker.dex_url)
         console.log("Price saved")
       } else {
         console.log("Price not found, nothing to save")
@@ -88,7 +88,7 @@ app.post('/startTickerV2', async (req, resp) => {
       const price = await scraper.scrapePrice(req.body.url, req.body.swapCurrency, req.body.priceCurrency)
       if(price !== null && price !== undefined){
         console.log("Price found and retrieved")
-        mysql.setPrice(req.body.priceCurrency, price)
+        mysql.setPrice(req.body.priceCurrency, price, req.body.url)
         console.log("Price saved")
       } else {
         console.log("Price not found, nothing to save")
@@ -118,6 +118,11 @@ app.post('/stopTicker', async (req, resp) => {
     console.log(e)
     resp.json(e)
   }
+})
+
+app.get('/getCurrencyList/:dexUrl', async (req, resp) => {
+  let rows = await mysql.getCurrencyList(req.params.dexUrl)
+  resp.json(rows)
 })
 
 app.listen(port, () => {

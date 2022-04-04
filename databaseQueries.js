@@ -14,9 +14,9 @@ const connect = async () => {
 
 // TODO - refactor into one method that takes a query as a param
 
-const setPrice = async (currency, cryptoPrice) => {
+const setPrice = async (currency, cryptoPrice, dexUrl) => {
   const connection = await connect()
-  const result = await connection.query(`INSERT INTO crypto_prices (currency, price) VALUES('${currency}', ${cryptoPrice})`);
+  const result = await connection.query(`INSERT INTO crypto_prices (currency, price, dex_url) VALUES('${currency}', ${cryptoPrice}, '${dexUrl}')`);
   await connection.end()
   return result[0]
 }
@@ -45,6 +45,13 @@ const deleteTicker = async (tickerId) => {
   clearInterval(tickerId)
   const connection = await connect()
   const result = await connection.query(`DELETE FROM crypto_tickers WHERE id='${tickerId}'`);
+  await connection.end()
+  return result[0]
+}
+
+const getCurrencyList = async (dexUrl) => {
+  const connection = await connect()
+  const result = await connection.query(`SELECT DISTINCT FROM crypto_prices WHERE dex_url='${dexUrl}'`)
   await connection.end()
   return result[0]
 }
