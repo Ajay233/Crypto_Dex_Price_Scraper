@@ -45,10 +45,11 @@ app.get('/', (req, resp) => {
   resp.send("Server is up and running")
 })
 
-app.get('/getPrices/:currency', async (req,resp) => {
+app.get('/getPrices', async (req,resp) => {
   try{
     //let msg = await scraper.scrapePrice(url, "tADA/tMIN", "tMIN");
-    let rows = await mysql.getPrices(req.params.currency);
+    const url = decodeURIComponent(req.query.dexUrl)
+    let rows = await mysql.getPrices(req.query.currency, url);
     resp.json(rows)
   } catch(e) {
     console.log(e)
@@ -120,8 +121,9 @@ app.post('/stopTicker', async (req, resp) => {
   }
 })
 
-app.get('/getCurrencyList/:dexUrl', async (req, resp) => {
-  let rows = await mysql.getCurrencyList(req.params.dexUrl)
+app.get('/getCurrencyList', async (req, resp) => {
+  const url = decodeURIComponent(req.query.dexUrl)
+  let rows = await mysql.getCurrencyList(url)
   resp.json(rows)
 })
 

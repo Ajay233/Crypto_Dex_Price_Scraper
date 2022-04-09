@@ -21,9 +21,9 @@ const setPrice = async (currency, cryptoPrice, dexUrl) => {
   return result[0]
 }
 
-const getPrices = async (currency) => {
+const getPrices = async (currency, dexUrl) => {
   const connection = await connect()
-  const rows = await connection.query(`SELECT price, created FROM crypto_prices WHERE currency='${currency}'`);
+  const rows = await connection.query(`SELECT price, created FROM crypto_prices WHERE currency='${currency}' AND dex_url='${dexUrl}'`);
   await connection.end()
   return rows[0]
 }
@@ -51,7 +51,7 @@ const deleteTicker = async (tickerId) => {
 
 const getCurrencyList = async (dexUrl) => {
   const connection = await connect()
-  const result = await connection.query(`SELECT DISTINCT FROM crypto_prices WHERE dex_url='${dexUrl}'`)
+  const result = await connection.query(`SELECT DISTINCT currency FROM crypto_prices WHERE dex_url='${dexUrl}'`)
   await connection.end()
   return result[0]
 }
@@ -61,3 +61,4 @@ exports.getPrices = getPrices;
 exports.saveTickerDetails = saveTickerDetails;
 exports.getActiveTickers = getActiveTickers;
 exports.deleteTicker = deleteTicker;
+exports.getCurrencyList = getCurrencyList;
