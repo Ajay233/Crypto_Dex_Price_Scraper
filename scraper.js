@@ -12,9 +12,9 @@ const swapExists = async (url, swapCurrency) => {
   return elem.length > 0
 }
 
-const scrapePrice = async (url, swapCurrency, priceCurrency) => {
+const scrapePrice = async (browser, url, swapCurrency, priceCurrency) => {
   // Connect to the specified URL and wait until this process is complete
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+  // const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   const page = await browser.newPage();
   let pageLoaded = false
   try {
@@ -25,7 +25,8 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
     pageLoaded = true
   } catch (e) {
       console.log(`Unable to go to ${url}`)
-      await browser.close();
+      //await browser.close();
+      await page.close();
       return
   }
 
@@ -35,7 +36,8 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
       await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
     } catch (e) {
       console.log(`Could not find button containing ${swapCurrency}`)
-      await browser.close();
+      //await browser.close();
+      await page.close();
       return
     }
     const [elem] = await page.$x(`//button[contains(., '${swapCurrency}')]`)
@@ -51,7 +53,8 @@ const scrapePrice = async (url, swapCurrency, priceCurrency) => {
 
     // Extract the price from the string
     const price = extractPrice(priceCurrency, priceTextString)
-    await browser.close();
+    //await browser.close();
+    await page.close();
     console.log(`The price of ${priceCurrency} is: ${price} tADA`)
     return price
   }

@@ -5,15 +5,20 @@ const scraper = require('./scraper.js')
 const mysql = require('./databaseQueries.js')
 const schedule = require('node-schedule')
 const https = require("https");
+const puppeteer = require('puppeteer')
 
 let jobs = {};
+let browser = null;
+(async () => {
+  browser = await puppeteer.launch({ args: ['--no-sandbox'] });
+})();
 
 // IIFE to restart any active chronjobs if the server is restarted
 (async () => {
   const activeTickers = await mysql.getActiveTickers()
   activeTickers.forEach((ticker) => {
     jobs[ticker.price_currency] = schedule.scheduleJob(`*/${ticker.chron_job_frequency} * * * *`, async () => {
-      const price = await scraper.scrapePrice(ticker.dex_url, ticker.swap_currencies, ticker.price_currency)
+      const price = await scraper.scrapePrice(browser, ticker.dex_url, ticker.swap_currencies, ticker.price_currency)
       if(price !== null && price !== undefined){
         console.log("Price found and retrieved")
         mysql.setPrice(ticker.price_currency, price, ticker.dex_url)
@@ -57,36 +62,10 @@ app.get('/getPrices', async (req,resp) => {
   }
 })
 
-// ** NOT CURRENTLY USED **
-app.post('/startTickerV1', async (req, resp) => {
-  // req.url, req.swapCurrency, req.priceCurrency
-  try {
-    // check element exists
-    const exists = await scraper.swapExists(req.body.url, req.body.swapCurrency)
-    // if not throw error
-    if(exists){
-      // start the interval to set price every 2-5 mins
-      const tickerId = setInterval(async (req) => {
-        const price = await scraper.scrapePrice(req.body.url, req.body.swapCurrency, req.body.priceCurrency)
-        mysql.setPrice(req.body.priceCurrency, price)
-      },150000)
-
-      // save the interval id to the db
-      const result = await mysql.saveTickerDetails(tickerId, req.body.priceCurrency)
-      resp.send("Ticker started")
-    }else {
-      resp.send("No match for that swap pair")
-    }
-  } catch (e) {
-    console.log(e)
-    resp.json(e)
-  }
-})
-
 app.post('/startTickerV2', async (req, resp) => {
   try {
     jobs[req.body.priceCurrency] = schedule.scheduleJob(`*/${req.body.frequency} * * * *`, async () => {
-      const price = await scraper.scrapePrice(req.body.url, req.body.swapCurrency, req.body.priceCurrency)
+      const price = await scraper.scrapePrice(browser, req.body.url, req.body.swapCurrency, req.body.priceCurrency)
       if(price !== null && price !== undefined){
         console.log("Price found and retrieved")
         mysql.setPrice(req.body.priceCurrency, price, req.body.url)
