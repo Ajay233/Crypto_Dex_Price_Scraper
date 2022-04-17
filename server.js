@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const port = process.env.PORT || 3030;
-const scraper = require('./scraper.js')
+const scraper = require('./scrapers/scraper.js')
 const mysql = require('./databaseQueries.js')
 const schedule = require('node-schedule')
 const https = require("https");
