@@ -29,7 +29,7 @@ const scrapeWingridersPrice = async (page, swapCurrency, priceCurrency) => {
   if(poolFound){
     const priceTextString = await page.evaluate(priceElem => priceElem.textContent, priceElem)
     const adaTextString = await page.evaluate(adaElem => adaElem.textContent, adaElem)
-    const currencyVal = extractPrice(`MIN value`, priceTextString).join('').replace(/\s/g, '')
+    const currencyVal = extractPrice(`${priceCurrency} value`, priceTextString).join('').replace(/\s/g, '')
     const adaValue = extractPrice("ADA value", adaTextString).join('').replace(/\s/g, '')
 
     // Until Wingriders add the price of 1 token, we have to get the swap pair and divde them to get the price
@@ -38,7 +38,7 @@ const scrapeWingridersPrice = async (page, swapCurrency, priceCurrency) => {
 
   // TODO: error handling if no page has the pool we're looking for
 
-  return price
+  return price.toFixed(7)
 }
 
 const navigateToNextPage = async (page, pageNumber) => {
