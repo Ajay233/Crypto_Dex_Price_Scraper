@@ -1,39 +1,29 @@
 const scrapeMinswapPrice = async (page, swapCurrency, priceCurrency) => {
+
+  const pathToPrice = `//div[contains(text(), '${swapCurrency}')]/parent::div/parent::div/child::div[contains(., "₳")]`
+
   try {
-    await page.waitForXPath(`//button[contains(., '${swapCurrency}')]`)
+    await page.waitForXPath(pathToPrice)
   } catch (e) {
     console.log(`Could not find button containing ${swapCurrency}`)
     await page.close();
     return
   }
-  const [elem] = await page.$x(`//button[contains(., '${swapCurrency}')]`)
-  const buttonId = await page.evaluate(elem => elem.id, elem)
 
-  // Use the button ID to create the panel ID
-  const xPathFinal = createIdXpath(buttonId)
+  // Get the element with the price in ADA for the specified pool
+  const [elem] = await page.$x(pathToPrice);
 
-  // Use the panel ID to find the div with the price and extract the innerText
-  await page.waitForXPath(xPathFinal)
-  const [priceElem] = await page.$x(xPathFinal)
-  let priceTextString = await page.evaluate(priceElem => priceElem.innerText, priceElem)
+  // Get the inner text e.g '0.070405 ₳'
+  const priceText = await page.evaluate(elem => elem.innerText, elem);
 
-  // Extract the price form the innerText string
-  const price = extractPrice(priceCurrency, priceTextString)
-  return price
+  // Remove the ' ₳' from the price and return the price for saving to the DB
+  const price = convertToPrice(priceText);
+  return price;
 }
 
-const createIdXpath = (id) => {
-  let panelId = id.replace('button', 'panel')
-  return `//div[@id='${panelId}']`
-}
-
-const extractPrice = (priceCurrency, priceTextString) => {
-  // Need to dynamically construct regex equal to e.g.  /(?<=tMIN = )[0-9]+.[0-9]+\S/g;
-  // We'd just replace tMIN with whatever currency we want to see
-  const regexStart = "(?<="
-  const regexEnd = " = )[0-9]+.[0-9]+\\S"
-  const regexFinal = new RegExp(regexStart + priceCurrency + regexEnd, 'g')
-  return priceTextString.match(regexFinal)
+const convertToPrice = (priceString) => {
+  const price = priceString.replace(" ₳", "")
+  return price;
 }
 
 // TODO: decide how to error handle in the scraper method before implementing this
